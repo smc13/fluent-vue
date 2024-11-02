@@ -11,23 +11,26 @@ import { createComponent } from './vue/component'
 import { getContext, getMergedContext } from './getContext'
 import { RootContextSymbol } from './symbols'
 import { resolveOptions } from './util/options'
+import type { FluentAttributeRecord, FluentMap, FluentVariableRecord } from './util/config'
 
 export { useFluent } from './composition'
+
+export * from './util/config'
 
 export interface FluentVue {
   /** Current negotiated fallback chain of languages */
   bundles: Iterable<FluentBundle>
 
-  format: (key: string, value?: Record<string, FluentVariable>) => string
+  format: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => string
 
-  formatAttrs: (key: string, value?: Record<string, FluentVariable>) => Record<string, string>
+  formatAttrs: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => FluentAttributeRecord<Key>
 
-  formatWithAttrs: (key: string, value?: Record<string, FluentVariable>) => TranslationWithAttrs
+  formatWithAttrs: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => TranslationWithAttrs<Key>
 
   mergedWith: (extraTranslations?: Record<string, FluentResource>) => TranslationContext
 
-  $t: (key: string, value?: Record<string, FluentVariable>) => string
-  $ta: (key: string, value?: Record<string, FluentVariable>) => Record<string, string>
+  $t: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => string
+  $ta: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => FluentAttributeRecord<Key>
 
   install: InstallFunction
 }
@@ -73,7 +76,7 @@ export function createFluentVue(options: FluentVueOptions): FluentVue {
           key: string,
           value?: Record<string, FluentVariable>,
         ) {
-          return getContext(rootContext, this as Vue3Component).format(key, value)
+          return getContext(rootContext, this as Vue3Component).format(key, value as any)
         }
         vue3.config.globalProperties[resolvedOptions.globalFormatAttrsName] = function (
           key: string,
@@ -96,7 +99,7 @@ export function createFluentVue(options: FluentVueOptions): FluentVue {
         })
 
         vue2.prototype[resolvedOptions.globalFormatName] = function (key: string, value?: Record<string, FluentVariable>) {
-          return getContext(rootContext, this).format(key, value)
+          return getContext(rootContext, this).format(key, value as any)
         }
         vue2.prototype[resolvedOptions.globalFormatAttrsName] = function (key: string, value?: Record<string, FluentVariable>) {
           return getContext(rootContext, this).formatAttrs(key, value)

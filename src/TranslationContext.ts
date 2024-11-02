@@ -5,11 +5,12 @@ import { mapBundleSync } from '@fluent/sequence'
 import type { TranslationContextOptions } from './types'
 
 import { warn } from './util/warn'
+import type { FluentAttributeRecord, FluentMap, FluentVariableRecord } from './util/config'
 
-export interface TranslationWithAttrs {
+export interface TranslationWithAttrs<Key extends keyof FluentMap = keyof FluentMap> {
   value: string
   hasValue: boolean
-  attributes: Record<string, string>
+  attributes: FluentAttributeRecord<Key>
 }
 
 export class TranslationContext {
@@ -49,10 +50,10 @@ export class TranslationContext {
     return formatted
   }
 
-  private _format(
+  private _format<Key extends keyof FluentMap = keyof FluentMap>(
     context: FluentBundle | null,
     message: Message | null,
-    value?: Record<string, FluentVariable>,
+    value?: FluentVariableRecord<Key>,
   ): string | null {
     if (context === null || message === null || message.value === null)
       return null
@@ -60,10 +61,10 @@ export class TranslationContext {
     return this.formatPattern(context, message.id, message.value, value)
   }
 
-  format = (key: string, value?: Record<string, FluentVariable>): string => {
+  format = <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables: FluentVariableRecord<Key>): string => {
     const context = this.getBundle(key)
     const message = this.getMessage(context, key)
-    return this._format(context, message, value) ?? key
+    return this._format(context, message, variables) ?? key
   }
 
   private _formatAttrs(
@@ -87,7 +88,7 @@ export class TranslationContext {
     return this._formatAttrs(context, message, value) ?? {}
   }
 
-  formatWithAttrs = (key: string, value?: Record<string, FluentVariable>): TranslationWithAttrs => {
+  formatWithAttrs = <Key extends keyof FluentMap = keyof FluentMap>(key: Key, value?: FluentVariableRecord<Key>): TranslationWithAttrs => {
     const context = this.getBundle(key)
     const message = this.getMessage(context, key)
 

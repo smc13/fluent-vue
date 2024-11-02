@@ -1,5 +1,6 @@
 import type { DefineComponent, FunctionDirective, PropType } from 'vue-demi'
 import type { FluentVariable } from '@fluent/bundle'
+import type { FluentAttributeRecord, FluentMap, FluentVariableRecord } from '../util/config'
 
 type ComponentType = DefineComponent<{
   /**
@@ -43,8 +44,8 @@ type ComponentType = DefineComponent<{
 // @ts-ignore: works on Vue 2, fails in Vue 3
 declare module 'vue/types/vue' {
   export interface Vue {
-    $t: (key: string, values?: Record<string, unknown>) => string
-    $ta: (key: string, values?: Record<string, unknown>) => Record<string, string>
+    $t: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => string
+    $ta: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => FluentAttributeRecord<Key>
   }
 }
 
@@ -52,8 +53,8 @@ declare module 'vue/types/vue' {
 // @ts-ignore: works on Vue 3, fails in Vue 2
 declare module '@vue/runtime-core' {
   export interface ComponentCustomProperties {
-    $t: (key: string, values?: Record<string, unknown>) => string
-    $ta: (key: string, values?: Record<string, unknown>) => Record<string, string>
+    $t: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => string
+    $ta: <Key extends keyof FluentMap = keyof FluentMap>(key: Key, variables?: FluentVariableRecord<Key>) => FluentAttributeRecord<Key>
     vT: FunctionDirective<HTMLElement, Record<string, FluentVariable>>
   }
 
